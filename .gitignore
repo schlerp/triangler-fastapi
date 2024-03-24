@@ -6,5 +6,12 @@ dist/
 wheels/
 *.egg-info
 
+# macos crap
+**/.DS_Store
+
 # venv
 .venv
+
+# databases
+*.db
+*.sqlite
