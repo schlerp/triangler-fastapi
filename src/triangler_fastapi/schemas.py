@@ -40,8 +40,7 @@ class ExperimentBaseSchema(TrianglerBaseSchema):
     end_on: datetime
 
 
-class ExperimentInSchema(ExperimentBaseSchema):
-    ...
+class ExperimentInSchema(ExperimentBaseSchema): ...
 
 
 class ExperimentOutSchema(TrianglerOutBaseSchema, ExperimentBaseSchema):
@@ -54,12 +53,10 @@ class ObservationBaseSchema(TrianglerBaseSchema):
     correct_sample: str
 
 
-class ObservationInSchema(ObservationBaseSchema):
-    ...
+class ObservationInSchema(ObservationBaseSchema): ...
 
 
-class ObservationOutSchema(TrianglerOutBaseSchema, ObservationBaseSchema):
-    ...
+class ObservationOutSchema(TrianglerOutBaseSchema, ObservationBaseSchema): ...
 
 
 class ObservationResponseBaseSchema(TrianglerBaseSchema):
@@ -70,14 +67,12 @@ class ObservationResponseBaseSchema(TrianglerBaseSchema):
     updated_at: datetime
 
 
-class ObservationResponseInSchema(ObservationResponseBaseSchema):
-    ...
+class ObservationResponseInSchema(ObservationResponseBaseSchema): ...
 
 
 class ObservationResponseOutSchema(
     TrianglerOutBaseSchema, ObservationResponseBaseSchema
-):
-    ...
+): ...
 
 
 class ObservationTokenBaseSchema(TrianglerBaseSchema):
@@ -90,9 +85,7 @@ class ObservationTokenBaseSchema(TrianglerBaseSchema):
         return token_utils.generate_qr_code_svg(self.token)
 
 
-class ObservationTokenInSchema(ObservationTokenBaseSchema):
-    ...
+class ObservationTokenInSchema(ObservationTokenBaseSchema): ...
 
 
-class ObservationTokenOutSchema(TrianglerOutBaseSchema, ObservationTokenBaseSchema):
-    ...
+class ObservationTokenOutSchema(TrianglerOutBaseSchema, ObservationTokenBaseSchema): ...
