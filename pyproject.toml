@@ -39,6 +39,7 @@ dev-dependencies = [
     "pytest-xdist>=3.5.0",
     "pytest-watch>=4.2.0",
     "pytest-watcher>=0.4.1",
+    "pre-commit>=3.6.2",
 ]
 
 [tool.pytest]
