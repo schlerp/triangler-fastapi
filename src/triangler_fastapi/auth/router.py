@@ -4,19 +4,20 @@ from fastapi import APIRouter
 from fastapi import Depends
 from fastapi import HTTPException
 
+from triangler_fastapi.auth import constants
 from triangler_fastapi.auth import depends
 from triangler_fastapi.auth import schemas
 from triangler_fastapi.auth import usecases
 from triangler_fastapi.exceptions import errors
 
 router = APIRouter(
-    prefix="/auth",
-    tags=["Auth"],
+    prefix=constants.ROUTER_PREFIX,
+    tags=["Auth", "v1"],
     responses={404: {"description": "Not found"}},
 )
 
 
-@router.post("/token")
+@router.post(constants.TOKEN_PATH)
 async def login_for_access_token(
     login_data: schemas.LoginPayload,
 ) -> schemas.Token:

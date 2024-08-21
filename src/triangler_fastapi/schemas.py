@@ -1,12 +1,18 @@
+from datetime import date
 from datetime import datetime
+from typing import Annotated
 from typing import Any
 from typing import Optional
 from typing import Self
 
 from pydantic import BaseModel
 from pydantic import ConfigDict
+from pydantic import Field
+from pydantic import model_validator
 
 from triangler_fastapi import token_utils
+
+PositiveInt = Annotated[int, Field(ge=0)]
 
 
 class TrianglerBaseSchema(BaseModel):
@@ -14,37 +20,53 @@ class TrianglerBaseSchema(BaseModel):
 
 
 class JustIdSchema(TrianglerBaseSchema):
-    id: int
+    id: PositiveInt
 
 
-class ActionSuccessful(TrianglerBaseSchema):
+class ActionOutcome(TrianglerBaseSchema):
+    success: bool
     message: str
     details: Optional[dict[str, Any]] = None
 
-
-class ActionFailed(TrianglerBaseSchema):
-    message: str
-    details: Optional[dict[str, Any]] = None
+    @model_validator(mode="after")
+    def ensure_message_if_not_successful(self: Self) -> Self:
+        if not self.success and not self.message:
+            raise ValueError("When success is False, a message must be provided.")
+        return self
 
 
 class TrianglerOutBaseSchema(TrianglerBaseSchema):
-    id: int
+    id: PositiveInt
     created_at: datetime
     updated_at: datetime
+
+    @model_validator(mode="after")
+    def ensure_valid_updated_at(self: Self) -> Self:
+        if self.created_at > self.updated_at:
+            raise ValueError(
+                "Update date must be greater than or equal to create date."
+            )
+        return self
 
 
 class ExperimentBaseSchema(TrianglerBaseSchema):
     name: str
     description: str
-    start_on: datetime
-    end_on: datetime
+    start_on: date
+    end_on: date
+
+    @model_validator(mode="after")
+    def ensure_valid_range(self: Self) -> Self:
+        if self.start_on > self.end_on:
+            raise ValueError("Start date must be before or equal to end date.")
+        return self
 
 
 class ExperimentInSchema(ExperimentBaseSchema): ...
 
 
 class ExperimentOutSchema(TrianglerOutBaseSchema, ExperimentBaseSchema):
-    sample_size: int
+    sample_size: PositiveInt
     p_value: float
 
 
@@ -63,8 +85,6 @@ class ObservationResponseBaseSchema(TrianglerBaseSchema):
     observation_id: int
     response: str
     is_correct: bool
-    created_at: datetime
-    updated_at: datetime
 
 
 class ObservationResponseInSchema(ObservationResponseBaseSchema): ...

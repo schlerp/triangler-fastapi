@@ -1,5 +1,5 @@
 from collections.abc import Sequence
-from datetime import datetime
+from datetime import date
 
 from sqlalchemy import select
 
@@ -38,8 +38,8 @@ def get_experiment_by_id(id: int) -> schemas.ExperimentOutSchema | None:
 def create_experiment(
     name: str,
     description: str,
-    start_on: datetime,
-    end_on: datetime,
+    start_on: date,
+    end_on: date,
 ) -> schemas.ExperimentOutSchema:
     with persistence.SessionLocal() as session:
         new_experiment = models.Experiment(
@@ -55,8 +55,8 @@ def update_experiment(
     experiment_id: int,
     name: str | None = None,
     description: str | None = None,
-    start_on: datetime | None = None,
-    end_on: datetime | None = None,
+    start_on: date | None = None,
+    end_on: date | None = None,
 ) -> schemas.ExperimentOutSchema:
     with persistence.SessionLocal() as session:
         experiment = session.scalars(

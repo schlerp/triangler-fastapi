@@ -1,10 +1,13 @@
 from datetime import datetime
 from typing import Self
+from typing import Type
 
 from pydantic import BaseModel
 from pydantic import ConfigDict
+from pydantic import Field
+from pydantic import computed_field
 
-from triangler_fastapi.auth.hashing import hash_password
+from triangler_fastapi.auth import hashing
 
 
 class LoginPayload(BaseModel):
@@ -37,6 +40,32 @@ class Role(BaseModel):
         return scope in self.scopes
 
 
+class UserCreate(BaseModel):
+    username: str
+    email: str
+    password: str
+    salt: str = Field(default_factory=hashing.generate_salt)
+    roles: list[Role] = Field(default_factory=list)
+
+    @computed_field
+    @property
+    def hashed_password(self: Self) -> str:
+        return hashing.hash_password(password=self.password, salt=self.salt)
+
+    @classmethod
+    def create(
+        cls: Type[Self],
+        username: str,
+        email: str,
+        password: str,
+        salt: str | None = None,
+    ) -> Self:
+        user_create_schema = cls(username=username, email=email, password=password)
+        if salt is not None:
+            user_create_schema.salt = salt
+        return user_create_schema
+
+
 class User(BaseModel):
     id: int
     created_at: datetime
@@ -55,4 +84,14 @@ class User(BaseModel):
 
     def validate_password(self: Self, password: str) -> bool:
         """Validates the supplied password."""
-        return self.hashed_password == hash_password(password=password, salt=self.salt)
+        return self.hashed_password == hashing.hash_password(
+            password=password, salt=self.salt
+        )
+
+    def password_is_set(self: Self) -> bool:
+        """Returns True if the password is set."""
+        return bool(self.hashed_password)
+
+    def set_password(self: Self, password: str) -> None:
+        """Sets the password for the user."""
+        self.hashed_password = hashing.hash_password(password=password, salt=self.salt)
