@@ -1,5 +1,6 @@
 from fastapi.security import OAuth2PasswordBearer
 
+from triangler_fastapi.auth import constants
 from triangler_fastapi.auth.schemas import Role
 
 SCOPES: dict[str, str] = {
@@ -30,4 +31,6 @@ STAFF_ROLE = Role(
 ANONYMOUS_ROLE = Role(name="anonymous", scopes=["anonymous"])
 
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/token", scopes=SCOPES)
+oauth2_scheme = OAuth2PasswordBearer(
+    tokenUrl=constants.TOKEN_PATH_ABSOLUTE, scopes=SCOPES
+)

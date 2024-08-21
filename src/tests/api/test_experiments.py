@@ -1,8 +1,7 @@
 from secrets import token_urlsafe
 
-from triangler_fastapi.schemas import ExperimentOutSchema
-
 from tests.api.experiment_recipes import create_experiment
+from triangler_fastapi.schemas import ExperimentOutSchema
 
 from .client import create_test_client
 
@@ -27,7 +26,7 @@ def test_get_experiment() -> None:
     test_experiment = create_experiment(client, name=test_name)
 
     # act
-    resp = client.get(f"/v1/experiments/{test_experiment.id}")
+    resp = client.get(f"/api/v1/experiments/{test_experiment.id}")
     assert resp.status_code == 200
     experiment_response_raw = resp.json()
     experiment = ExperimentOutSchema.model_validate(experiment_response_raw)
@@ -44,7 +43,7 @@ def test_get_all_experiments() -> None:
     _ = create_experiment(client, name=test_name)
 
     # act
-    resp = client.get("/v1/experiments/")
+    resp = client.get("/api/v1/experiments/")
     assert resp.status_code == 200
     all_experiments_raw = resp.json()
     all_experiments = [
@@ -63,7 +62,7 @@ def test_update_experiment() -> None:
     test_experiment = create_experiment(client, name=test_name)
 
     # act
-    resp = client.get(f"/v1/experiments/{test_experiment.id}")
+    resp = client.get(f"/api/v1/experiments/{test_experiment.id}")
     assert resp.status_code == 200
     experiment_response_raw = resp.json()
     experiment = ExperimentOutSchema.model_validate(experiment_response_raw)
@@ -79,11 +78,11 @@ def test_update_experiment() -> None:
         exclude={"id", "sample_size", "p_value", "created_at", "updated_at"}
     )
     resp_update = client.put(
-        f"/v1/experiments/{test_experiment.id}", content=updated_experiment_data
+        f"/api/v1/experiments/{test_experiment.id}", content=updated_experiment_data
     )
     assert resp_update.status_code == 200
     experiment_response_raw = resp.json()
-    resp_updated_get = client.get(f"/v1/experiments/{test_experiment.id}")
+    resp_updated_get = client.get(f"/api/v1/experiments/{test_experiment.id}")
     assert resp_updated_get.status_code == 200
     updated_experiment = ExperimentOutSchema.model_validate(resp_updated_get.json())
 
@@ -99,7 +98,7 @@ def test_delete_experiment() -> None:
     test_experiment = create_experiment(client, name=test_name)
 
     # act
-    resp = client.get(f"/v1/experiments/{test_experiment.id}")
+    resp = client.get(f"/api/v1/experiments/{test_experiment.id}")
     assert resp.status_code == 200
     experiment_response_raw = resp.json()
     experiment = ExperimentOutSchema.model_validate(experiment_response_raw)
@@ -109,9 +108,9 @@ def test_delete_experiment() -> None:
     assert test_experiment.id == experiment.id
 
     # act
-    resp_delete = client.delete(f"/v1/experiments/{test_experiment.id}")
+    resp_delete = client.delete(f"/api/v1/experiments/{test_experiment.id}")
     assert resp_delete.status_code == 200
-    resp_delete_get = client.get(f"/v1/experiments/{test_experiment.id}")
+    resp_delete_get = client.get(f"/api/v1/experiments/{test_experiment.id}")
 
     # assert
     assert resp_delete_get.status_code == 404

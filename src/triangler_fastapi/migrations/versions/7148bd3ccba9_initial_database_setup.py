@@ -1,8 +1,8 @@
 """initial database setup
 
-Revision ID: 76e0c23970e6
+Revision ID: 7148bd3ccba9
 Revises:
-Create Date: 2024-03-24 04:20:26.431319+00:00
+Create Date: 2024-03-30 04:35:52.431048+00:00
 
 """
 
@@ -13,7 +13,7 @@ import sqlalchemy as sa
 from alembic import op
 
 # revision identifiers, used by Alembic.
-revision: str = "76e0c23970e6"
+revision: str = "7148bd3ccba9"
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -35,6 +35,33 @@ def upgrade() -> None:
     op.create_index(op.f("ix_experiment_id"), "experiment", ["id"], unique=False)
     op.create_index(op.f("ix_experiment_name"), "experiment", ["name"], unique=False)
     op.create_table(
+        "roles",
+        sa.Column("id", sa.Integer(), nullable=False),
+        sa.Column("created_at", sa.DateTime(), nullable=False),
+        sa.Column("name", sa.String(), nullable=False),
+        sa.Column("scopes", sa.String(), nullable=False),
+        sa.Column("disabled", sa.Boolean(), nullable=False),
+        sa.Column("updated_at", sa.DateTime(), nullable=False),
+        sa.PrimaryKeyConstraint("id"),
+    )
+    op.create_index(op.f("ix_roles_id"), "roles", ["id"], unique=False)
+    op.create_index(op.f("ix_roles_name"), "roles", ["name"], unique=True)
+    op.create_table(
+        "user",
+        sa.Column("id", sa.Integer(), nullable=False),
+        sa.Column("created_at", sa.DateTime(), nullable=False),
+        sa.Column("username", sa.String(), nullable=False),
+        sa.Column("email", sa.String(), nullable=False),
+        sa.Column("hashed_password", sa.String(), nullable=False),
+        sa.Column("salt", sa.String(), nullable=False),
+        sa.Column("disabled", sa.Boolean(), nullable=False),
+        sa.Column("updated_at", sa.DateTime(), nullable=False),
+        sa.PrimaryKeyConstraint("id"),
+    )
+    op.create_index(op.f("ix_user_email"), "user", ["email"], unique=True)
+    op.create_index(op.f("ix_user_id"), "user", ["id"], unique=False)
+    op.create_index(op.f("ix_user_username"), "user", ["username"], unique=True)
+    op.create_table(
         "observation",
         sa.Column(
             "correct_sample", sa.Enum("A", "B", "C", name="samplenames"), nullable=False
@@ -50,6 +77,30 @@ def upgrade() -> None:
         sa.PrimaryKeyConstraint("id"),
     )
     op.create_index(op.f("ix_observation_id"), "observation", ["id"], unique=False)
+    op.create_table(
+        "user_roles",
+        sa.Column("user_id", sa.Integer(), nullable=False),
+        sa.Column("role_id", sa.Integer(), nullable=False),
+        sa.Column("created_at", sa.DateTime(), nullable=False),
+        sa.Column("id", sa.Integer(), nullable=False),
+        sa.Column("updated_at", sa.DateTime(), nullable=False),
+        sa.ForeignKeyConstraint(
+            ["role_id"],
+            ["roles.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["user_id"],
+            ["user.id"],
+        ),
+        sa.PrimaryKeyConstraint("user_id", "role_id", "id"),
+    )
+    op.create_index(op.f("ix_user_roles_id"), "user_roles", ["id"], unique=False)
+    op.create_index(
+        op.f("ix_user_roles_role_id"), "user_roles", ["role_id"], unique=False
+    )
+    op.create_index(
+        op.f("ix_user_roles_user_id"), "user_roles", ["user_id"], unique=False
+    )
     op.create_table(
         "observation_response",
         sa.Column("experiment_id", sa.Integer(), nullable=False),
@@ -117,8 +168,19 @@ def downgrade() -> None:
     op.drop_table("observation_token")
     op.drop_index(op.f("ix_observation_response_id"), table_name="observation_response")
     op.drop_table("observation_response")
+    op.drop_index(op.f("ix_user_roles_user_id"), table_name="user_roles")
+    op.drop_index(op.f("ix_user_roles_role_id"), table_name="user_roles")
+    op.drop_index(op.f("ix_user_roles_id"), table_name="user_roles")
+    op.drop_table("user_roles")
     op.drop_index(op.f("ix_observation_id"), table_name="observation")
     op.drop_table("observation")
+    op.drop_index(op.f("ix_user_username"), table_name="user")
+    op.drop_index(op.f("ix_user_id"), table_name="user")
+    op.drop_index(op.f("ix_user_email"), table_name="user")
+    op.drop_table("user")
+    op.drop_index(op.f("ix_roles_name"), table_name="roles")
+    op.drop_index(op.f("ix_roles_id"), table_name="roles")
+    op.drop_table("roles")
     op.drop_index(op.f("ix_experiment_name"), table_name="experiment")
     op.drop_index(op.f("ix_experiment_id"), table_name="experiment")
     op.drop_table("experiment")

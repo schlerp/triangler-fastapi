@@ -12,6 +12,7 @@ from sqlalchemy.orm import Mapped
 from sqlalchemy.orm import mapped_column
 from sqlalchemy.orm import relationship
 
+from triangler_fastapi import datetime_utils
 from triangler_fastapi import token_utils
 from triangler_fastapi.constants import ExperienceLevels
 from triangler_fastapi.constants import SampleNames
@@ -24,9 +25,9 @@ class TrianglerBaseModel(Base):
     __abstract__ = True
 
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
-    created_at: Mapped[datetime] = mapped_column(default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(default=datetime_utils.utcnow)
     updated_at: Mapped[datetime] = mapped_column(
-        default=datetime.utcnow, onupdate=datetime.utcnow
+        default=datetime_utils.utcnow, onupdate=datetime_utils.utcnow
     )
 
 
@@ -103,7 +104,7 @@ class ObservationResponse(TrianglerBaseModel):
     experience_level: Mapped[Enum] = mapped_column(Enum(ExperienceLevels))
     chosen_sample: Mapped[Enum] = mapped_column(Enum(SampleNames))
     responsed_at: Mapped[datetime] = mapped_column(
-        DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
+        DateTime, default=datetime_utils.utcnow, onupdate=datetime_utils.utcnow
     )
     observation_id: Mapped[int] = mapped_column(ForeignKey("observation.id"))
     observation: Mapped["Observation"] = relationship(back_populates="response")
