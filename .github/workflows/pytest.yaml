@@ -20,7 +20,7 @@ jobs:
       uses: actions/setup-python@v3
       with:
         python-version: ${{ matrix.python-version }}
-    - uses: phi-friday/install-rye@v1.4
+    - uses: phi-friday/install-rye@v2
       id: install-rye
       with:
         rye_version: "latest" # optional
