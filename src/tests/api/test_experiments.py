@@ -36,6 +36,17 @@ class TestExperimentsApiEndpoints:
         assert test_experiment.name == experiment.name
         assert test_experiment.id == experiment.id
 
+    def test_get_experiment_not_exists(self: Self) -> None:
+        # arrange
+        non_existant_id = -1
+        client = create_test_client()
+
+        # act
+        resp = client.get(f"/api/v1/experiments/{non_existant_id}")
+
+        # assert
+        assert resp.status_code == 404
+
     def test_get_all_experiments_succeeds(self: Self) -> None:
         # arrange
         test_name = f"test {token_urlsafe(8)}"
