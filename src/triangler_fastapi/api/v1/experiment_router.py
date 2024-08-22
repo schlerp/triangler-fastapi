@@ -51,7 +51,7 @@ def create_experiment(
 @router.put("/{experiment_id}", status_code=200)
 def update_experiment(
     experiment_id: int, payload: schemas.ExperimentInSchema
-) -> schemas.ActionOutcome | schemas.ActionOutcome:
+) -> schemas.ActionOutcome:
     """Updates the experiment with `experiment_id`, using supplied payload"""
     # TODO: should we return the updated experiment?
     try:
