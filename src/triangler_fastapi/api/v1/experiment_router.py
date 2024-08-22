@@ -51,7 +51,7 @@ def create_experiment(
 @router.put("/{experiment_id}", status_code=200)
 def update_experiment(
     experiment_id: int, payload: schemas.ExperimentInSchema
-) -> schemas.ActionOutcome | schemas.ActionOutcome:
+) -> schemas.ActionOutcome:
     """Updates the experiment with `experiment_id`, using supplied payload"""
     # TODO: should we return the updated experiment?
     try:
@@ -82,7 +82,7 @@ def update_experiment(
 @router.delete("/{experiment_id}", status_code=200)
 def delete_experiment(
     experiment_id: int,
-) -> schemas.ActionOutcome | schemas.ActionOutcome:
+) -> schemas.ActionOutcome:
     """Deletes the experiment with a matching id."""
     try:
         usecases.delete_experiment(
@@ -94,12 +94,8 @@ def delete_experiment(
             details={"id": experiment_id},
         )
     except ValueError as e:
-        logger.error(f"Error deleting experiment: {e}")
-        return schemas.ActionOutcome(success=False, message=str(e))
+        logger.error(str(e))
+        raise HTTPException(status_code=404, detail="Experiment not found")
     except Exception as e:
         logger.error(f"Error deleting experiment: {e}")
-        return schemas.ActionOutcome(
-            success=False,
-            message="An error occurred.",
-            details={"error": str(e)},  # TODO: remove this in production
-        )
+        raise HTTPException(status_code=500, detail="Experiment not found")
