@@ -155,3 +155,14 @@ class TestExperimentsDeleteApiEndpoints:
 
         # assert
         assert resp_delete_get.status_code == 404
+
+    def test_delete_experiment_fails_not_exists(self: Self) -> None:
+        # arrange
+        non_existant_id = -1
+        client = create_test_client()
+
+        # act
+        resp_delete = client.delete(f"/api/v1/experiments/{non_existant_id}")
+
+        # assert
+        assert resp_delete.status_code == 404
