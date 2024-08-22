@@ -8,7 +8,7 @@ from triangler_fastapi.schemas import ExperimentOutSchema
 from .client import create_test_client
 
 
-class TestExperimentsApiEndpoints:
+class TestExperimentsCreateApiEndpoints:
     def test_create_experiment_succeeds(self: Self) -> None:
         # arrange
         test_name = f"test {token_urlsafe(8)}"
@@ -21,6 +21,8 @@ class TestExperimentsApiEndpoints:
         assert test_experiment.id is not None
         assert test_experiment.name == test_name
 
+
+class TestExperimentsGetApiEndpoints:
     def test_get_experiment_succeeds(self: Self) -> None:
         # arrange
         test_name = f"test {token_urlsafe(8)}"
@@ -48,6 +50,8 @@ class TestExperimentsApiEndpoints:
         # assert
         assert resp.status_code == 404
 
+
+class TestExperimentsGetAllApiEndpoints:
     def test_get_all_experiments_succeeds(self: Self) -> None:
         # arrange
         test_name = f"test {token_urlsafe(8)}"
@@ -66,6 +70,8 @@ class TestExperimentsApiEndpoints:
         assert all_experiments
         assert test_name in [x.name for x in all_experiments]
 
+
+class TestExperimentsUpdateApiEndpoints:
     def test_update_experiment_succeeds(self: Self) -> None:
         # arrange
         test_name = f"test {token_urlsafe(8)}"
@@ -124,6 +130,8 @@ class TestExperimentsApiEndpoints:
         assert "not found" in response_outcome.message
         assert f"{non_existant_id}" in response_outcome.message
 
+
+class TestExperimentsDeleteApiEndpoints:
     def test_delete_experiment_succeeds(self: Self) -> None:
         # arrange
         test_name = f"test {token_urlsafe(8)}"
