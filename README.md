@@ -1,8 +1,12 @@
-# triangler-fastapi
+# Triangler-fastapi
+
+## Data structure
+
+![Triangler-FastAPI Data Model](/.assets/triangler_fastapi_data_model.drawio.png)
 
 ## What does the API need to do?
 
-* admin users can:
+* Administrator users can:
   * maintain experiments
     * create new experiments
     * update existing experiments
@@ -20,4 +24,4 @@
     * uses a token to link to the sample
   * update an observation
     * uses the same token again?
-    * or should we gen a new one?
+    * or should a new one get generated?
