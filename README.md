@@ -11,12 +11,12 @@
     * create new experiments
     * update existing experiments
     * delete experiments
-  * maintain samples for experiments
-    * create a sample
-      * generate a token for samples
-    * update a sample
-      * generate new token for samples
-    * delete a sample
+  * maintain sample flights for experiments
+    * create a sample flight
+      * generate a token for sample flights
+    * update a sample flight
+      * generate new token for sample flights
+    * delete a sample flight
   * get a report for a given experiment
 
 * anonymous users can:

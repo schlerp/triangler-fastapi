@@ -15,7 +15,9 @@ def get_all_experiments() -> Sequence[schemas.ExperimentOutSchema]:
             schemas.ExperimentOutSchema.model_validate(x)
             for x in session.scalars(
                 select(models.Experiment).order_by(models.Experiment.name)
-            ).all()
+            )
+            .unique()
+            .all()
         ]
         session.commit()
     return results
