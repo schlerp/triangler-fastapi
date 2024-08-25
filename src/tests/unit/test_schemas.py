@@ -50,7 +50,7 @@ class TestTrianglerOutBaseSchema:
         updated_at = datetime.datetime(
             year=2000, month=1, day=1, hour=0, minute=0, second=0
         )
-        schema = schemas.TrianglerOutBaseSchema(
+        schema = schemas.TrianglerBaseOutSchema(
             id=1,
             created_at=created_at,
             updated_at=updated_at,
@@ -66,7 +66,7 @@ class TestTrianglerOutBaseSchema:
             updated_at = datetime.datetime(
                 year=2000, month=1, day=1, hour=0, minute=0, second=0
             )
-            schemas.TrianglerOutBaseSchema(
+            schemas.TrianglerBaseOutSchema(
                 id=1,
                 created_at=created_at,
                 updated_at=updated_at,

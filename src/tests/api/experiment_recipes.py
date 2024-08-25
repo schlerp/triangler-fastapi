@@ -16,6 +16,7 @@ def create_experiment(
             "description": "This is a test experiment.",
             "start_on": datetime.today().date().isoformat(),
             "end_on": (datetime.today() + timedelta(days=7)).date().isoformat(),
+            "observations": [],
         },
     )
     assert response.status_code == 201, response.text

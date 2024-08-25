@@ -3,7 +3,6 @@ from datetime import datetime
 from typing import Self
 from typing import Type
 
-from scipy import stats
 from sqlalchemy import DateTime
 from sqlalchemy import Enum
 from sqlalchemy import ForeignKey
@@ -38,52 +37,28 @@ class Experiment(TrianglerBaseModel):
     description: Mapped[str] = mapped_column()
     start_on: Mapped[date] = mapped_column()
     end_on: Mapped[date] = mapped_column()
-    observations: Mapped[list["Observation"]] = relationship(
-        back_populates="experiment"
-    )
-    observation_responses: Mapped[list["ObservationResponse"]] = relationship(
-        back_populates="experiment"
+    sample_flights: Mapped[list["SampleFlight"]] = relationship(
+        back_populates="experiment", lazy=False
     )
 
     def __repr__(self: Self) -> str:
         return f"{self.__tablename__}(" f"id={self.id!r}, " f"name={self.name!r}, " ")"
 
-    @property
-    def sample_size(self: Self) -> int:
-        return len(self.observations)
 
-    @property
-    def p_value(self: Self) -> float:
-        n_samples = float(self.sample_size)
-        if n_samples < 1:
-            return 1.0
-        # expected 1/3 of the time to be correct
-        expected_correct = n_samples / 3
-        # expected 2/3 of the time to be incorrect
-        expected_incorrect = expected_correct * 2
-
-        # number of correct observations
-        observed_correct = len([1 for x in self.observation_responses if x.is_correct])
-        observed_incorrect = n_samples - observed_correct
-
-        correct_x2 = (abs(observed_correct - expected_correct) ** 2) / expected_correct
-        incorrect_x2 = (
-            abs(observed_incorrect - expected_incorrect) ** 2
-        ) / expected_incorrect
-
-        x2 = correct_x2 + incorrect_x2
-
-        return float(1 - stats.chi2.cdf(x2, 1))
-
-
-class Observation(TrianglerBaseModel):
-    __tablename__ = "observation"
+class SampleFlight(TrianglerBaseModel):
+    __tablename__ = "sample_flight"
 
     correct_sample: Mapped[Enum] = mapped_column(Enum(SampleNames))
     experiment_id: Mapped[int] = mapped_column(ForeignKey("experiment.id"))
-    experiment: Mapped["Experiment"] = relationship(back_populates="observations")
-    response: Mapped["ObservationResponse"] = relationship(back_populates="observation")
-    token: Mapped["ObservationToken"] = relationship(back_populates="observation")
+    experiment: Mapped["Experiment"] = relationship(
+        back_populates="sample_flights", lazy=False
+    )
+    observation: Mapped["Observation"] = relationship(
+        back_populates="sample_flight", lazy=False
+    )
+    token: Mapped["SampleFlightToken"] = relationship(
+        back_populates="sample_flight", lazy=False
+    )
 
     def __repr__(self: Self) -> str:
         return (
@@ -94,20 +69,21 @@ class Observation(TrianglerBaseModel):
         )
 
 
-class ObservationResponse(TrianglerBaseModel):
-    __tablename__ = "observation_response"
+class Observation(TrianglerBaseModel):
+    __tablename__ = "observation"
 
-    experiment_id: Mapped[int] = mapped_column(ForeignKey("experiment.id"))
-    experiment: Mapped["Experiment"] = relationship(
-        back_populates="observation_responses"
-    )
     experience_level: Mapped[Enum] = mapped_column(Enum(ExperienceLevels))
     chosen_sample: Mapped[Enum] = mapped_column(Enum(SampleNames))
-    responsed_at: Mapped[datetime] = mapped_column(
+    responded_at: Mapped[datetime] = mapped_column(
         DateTime, default=datetime_utils.utcnow, onupdate=datetime_utils.utcnow
     )
-    observation_id: Mapped[int] = mapped_column(ForeignKey("observation.id"))
-    observation: Mapped["Observation"] = relationship(back_populates="response")
+    sample_flight_id: Mapped[int] = mapped_column(ForeignKey("sample_flight.id"))
+    sample_flight: Mapped["SampleFlight"] = relationship(
+        back_populates="observation", lazy=False
+    )
+    token: Mapped["SampleFlightToken"] = relationship(
+        back_populates="observation", lazy=False
+    )
 
     @property
     def is_correct(self: Self) -> bool:
@@ -116,17 +92,23 @@ class ObservationResponse(TrianglerBaseModel):
         return False
 
 
-class ObservationToken(TrianglerBaseModel):
-    __tablename__ = "observation_token"
+class SampleFlightToken(TrianglerBaseModel):
+    __tablename__ = "sample_flight_token"
 
     token: Mapped[str] = mapped_column(String(length=32), unique=True, index=True)
     expiry_date: Mapped[datetime] = mapped_column(DateTime)
     observation_id: Mapped[int] = mapped_column(ForeignKey("observation.id"))
-    observation: Mapped["Observation"] = relationship(back_populates="token")
+    observation: Mapped["Observation"] = relationship(
+        back_populates="token", lazy=False
+    )
+    sample_flight_id: Mapped[int] = mapped_column(ForeignKey("sample_flight.id"))
+    sample_flight: Mapped["SampleFlight"] = relationship(
+        back_populates="token", lazy=False
+    )
 
     @classmethod
     def create_token_for_observation(cls: Type[Self], observation_id: int) -> Self:
-        observation = Observation.objects.get(id=observation_id)
+        observation = SampleFlight.objects.get(id=observation_id)
         token = token_utils.generate_unique_token()
         expiry_date = token_utils.calculate_expiry_date()
         return cls.objects.create(
@@ -136,7 +118,7 @@ class ObservationToken(TrianglerBaseModel):
         )
 
     @classmethod
-    def get_observation_for_token(cls: Type[Self], token: str) -> Observation:
+    def get_observation_for_token(cls: Type[Self], token: str) -> SampleFlight:
         return cls.objects.get(token=token).observation
 
     def refresh_token(self: Self) -> Self:

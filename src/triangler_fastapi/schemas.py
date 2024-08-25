@@ -9,6 +9,7 @@ from pydantic import BaseModel
 from pydantic import ConfigDict
 from pydantic import Field
 from pydantic import model_validator
+from scipy import stats
 
 from triangler_fastapi import token_utils
 
@@ -17,6 +18,9 @@ PositiveInt = Annotated[int, Field(ge=0)]
 
 class TrianglerBaseSchema(BaseModel):
     model_config = ConfigDict(from_attributes=True)
+
+
+class TrianglerBaseInSchema(TrianglerBaseSchema): ...
 
 
 class JustIdSchema(TrianglerBaseSchema):
@@ -35,7 +39,7 @@ class ActionOutcome(TrianglerBaseSchema):
         return self
 
 
-class TrianglerOutBaseSchema(TrianglerBaseSchema):
+class TrianglerBaseOutSchema(TrianglerBaseSchema):
     id: PositiveInt
     created_at: datetime
     updated_at: datetime
@@ -62,40 +66,71 @@ class ExperimentBaseSchema(TrianglerBaseSchema):
         return self
 
 
-class ExperimentInSchema(ExperimentBaseSchema): ...
+class ExperimentInSchema(ExperimentBaseSchema, TrianglerBaseInSchema): ...
 
 
-class ExperimentOutSchema(TrianglerOutBaseSchema, ExperimentBaseSchema):
-    sample_size: PositiveInt
-    p_value: float
+class ExperimentOutSchema(TrianglerBaseOutSchema, ExperimentBaseSchema):
+    sample_flights: list["SampleFlightOutSchema"]
+
+    @property
+    def sample_size(self: Self) -> int:
+        return len(self.sample_flights)
+
+    @property
+    def p_value(self: Self) -> float:
+        n_samples = float(self.sample_size)
+        if n_samples < 1:
+            return 1.0
+        # expected 1/3 of the time to be correct
+        expected_correct = n_samples / 3
+        # expected 2/3 of the time to be incorrect
+        expected_incorrect = expected_correct * 2
+
+        # number of correct observations
+        observed_correct = len([1 for x in self.sample_flights if x.is_correct])
+        observed_incorrect = n_samples - observed_correct
+
+        correct_x2 = (abs(observed_correct - expected_correct) ** 2) / expected_correct
+        incorrect_x2 = (
+            abs(observed_incorrect - expected_incorrect) ** 2
+        ) / expected_incorrect
+
+        x2 = correct_x2 + incorrect_x2
+
+        return float(1 - stats.chi2.cdf(x2, 1))
 
 
 class ObservationBaseSchema(TrianglerBaseSchema):
-    experiment_id: int
-    correct_sample: str
-
-
-class ObservationInSchema(ObservationBaseSchema): ...
-
-
-class ObservationOutSchema(TrianglerOutBaseSchema, ObservationBaseSchema): ...
-
-
-class ObservationResponseBaseSchema(TrianglerBaseSchema):
     observation_id: int
     response: str
     is_correct: bool
 
 
-class ObservationResponseInSchema(ObservationResponseBaseSchema): ...
+class ObservationInSchema(ObservationBaseSchema, TrianglerBaseInSchema): ...
 
 
-class ObservationResponseOutSchema(
-    TrianglerOutBaseSchema, ObservationResponseBaseSchema
-): ...
+class ObservationOutSchema(TrianglerBaseOutSchema, ObservationBaseSchema): ...
 
 
-class ObservationTokenBaseSchema(TrianglerBaseSchema):
+class SampleFlightBaseSchema(TrianglerBaseSchema):
+    experiment_id: int
+    correct_sample: str
+    observation: ObservationBaseSchema | None = None
+
+    @property
+    def is_correct(self: Self) -> bool:
+        if self.observation is None:
+            return False
+        return self.correct_sample == self.observation.response
+
+
+class SampleFlightInSchema(SampleFlightBaseSchema, TrianglerBaseInSchema): ...
+
+
+class SampleFlightOutSchema(TrianglerBaseOutSchema, SampleFlightBaseSchema): ...
+
+
+class SampleFlightTokenBaseSchema(TrianglerBaseSchema):
     token: str
     expiry_date: datetime
     observation_id: int
@@ -105,7 +140,9 @@ class ObservationTokenBaseSchema(TrianglerBaseSchema):
         return token_utils.generate_qr_code_svg(self.token)
 
 
-class ObservationTokenInSchema(ObservationTokenBaseSchema): ...
+class SampleFlightTokenInSchema(SampleFlightTokenBaseSchema, TrianglerBaseInSchema): ...
 
 
-class ObservationTokenOutSchema(TrianglerOutBaseSchema, ObservationTokenBaseSchema): ...
+class SampleFlightTokenOutSchema(
+    TrianglerBaseOutSchema, SampleFlightTokenBaseSchema
+): ...
