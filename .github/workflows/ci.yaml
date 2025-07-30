@@ -13,26 +13,23 @@ jobs:
     strategy:
       max-parallel: 4
       matrix:
-        python-version: [3.12]
+        python-version: [3.12, 3.13]
     steps:
     - uses: actions/checkout@v3
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v3
       with:
         python-version: ${{ matrix.python-version }}
-    - uses: phi-friday/install-rye@v2
-      id: install-rye
+    - name: Install the latest version of uv
+      uses: astral-sh/setup-uv@v6
       with:
-        rye_version: "latest" # optional
-        rye_home: "" # optional
-        python_version: ${{ matrix.python-version }} # optional
-        use_uv: true # optional
+        version: "latest"
     - name: Install Dependencies
       run: |
-        rye sync
+        uv sync
     - name: run ruff format
       run: |
-        rye run ruff format --check .
+        uv run ruff format --check .
     - name: run ruff check
       run: |
-        rye run ruff check .
+        uv run ruff check .
