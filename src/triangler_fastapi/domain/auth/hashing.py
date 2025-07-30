@@ -1,7 +1,7 @@
 import hashlib
 from secrets import token_urlsafe
 
-from triangler_fastapi.auth import constants
+from triangler_fastapi.domain.auth import constants
 
 
 def generate_salt() -> str:

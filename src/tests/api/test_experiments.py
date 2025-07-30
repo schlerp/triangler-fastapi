@@ -2,8 +2,7 @@ from secrets import token_urlsafe
 from typing import Self
 
 from tests.api.experiment_recipes import create_experiment
-from triangler_fastapi.schemas import ActionOutcome
-from triangler_fastapi.schemas import ExperimentOutSchema
+from triangler_fastapi.domain.schemas import ExperimentOutSchema
 
 from .client import create_test_client
 
@@ -122,13 +121,7 @@ class TestExperimentsUpdateApiEndpoints:
         resp_update = client.put(
             f"/api/v1/experiments/{non_existant_id}", json=updated_experiment_data
         )
-        assert resp_update.status_code == 200
-        response_outcome = ActionOutcome.model_validate(resp_update.json())
-
-        # assert
-        assert response_outcome.success is False
-        assert "not found" in response_outcome.message
-        assert f"{non_existant_id}" in response_outcome.message
+        assert resp_update.status_code == 404
 
 
 class TestExperimentsDeleteApiEndpoints:

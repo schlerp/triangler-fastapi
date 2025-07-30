@@ -1,13 +1,12 @@
-from datetime import datetime
 from typing import Self
-from typing import Type
 
 from pydantic import BaseModel
 from pydantic import ConfigDict
 from pydantic import Field
 from pydantic import computed_field
 
-from triangler_fastapi.auth import hashing
+from triangler_fastapi.domain import schemas
+from triangler_fastapi.domain.auth import hashing
 
 
 class LoginPayload(BaseModel):
@@ -40,7 +39,7 @@ class Role(BaseModel):
         return scope in self.scopes
 
 
-class UserCreate(BaseModel):
+class UserCreate(schemas.TrianglerBaseInSchema):
     username: str
     email: str
     password: str
@@ -54,7 +53,7 @@ class UserCreate(BaseModel):
 
     @classmethod
     def create(
-        cls: Type[Self],
+        cls: type[Self],
         username: str,
         email: str,
         password: str,
@@ -66,9 +65,8 @@ class UserCreate(BaseModel):
         return user_create_schema
 
 
-class User(BaseModel):
+class User(schemas.TrianglerBaseOutSchema):
     id: int
-    created_at: datetime
     username: str
     email: str
     hashed_password: str

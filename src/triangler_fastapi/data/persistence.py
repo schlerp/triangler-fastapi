@@ -1,6 +1,7 @@
+from collections.abc import Generator
 from typing import Any
-from typing import Generator
 
+from sqlalchemy import Engine
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 from sqlalchemy.orm import declarative_base
@@ -8,10 +9,16 @@ from sqlalchemy.orm import sessionmaker
 
 from triangler_fastapi import config
 
-engine = create_engine(
-    config.SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
-)
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+def get_engine() -> Engine:
+    return create_engine(
+        config.SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
+    )
+
+
+_engine = get_engine()
+
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=_engine)
 
 Base = declarative_base()
 

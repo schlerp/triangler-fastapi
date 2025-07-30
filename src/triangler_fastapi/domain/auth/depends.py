@@ -1,5 +1,4 @@
 from typing import Annotated
-from typing import cast
 
 from fastapi import Depends
 from fastapi import HTTPException
@@ -10,10 +9,10 @@ from jose import JWTError
 from jose import jwt
 from pydantic import ValidationError
 
-from triangler_fastapi.auth import constants
-from triangler_fastapi.auth import rbac
-from triangler_fastapi.auth import schemas
-from triangler_fastapi.auth import usecases
+from triangler_fastapi.domain.auth import constants
+from triangler_fastapi.domain.auth import rbac
+from triangler_fastapi.domain.auth import schemas
+from triangler_fastapi.domain.auth import usecases
 from triangler_fastapi.exceptions import errors
 
 
@@ -30,19 +29,14 @@ async def get_current_user(
         headers={"WWW-Authenticate": authenticate_value},
     )
     try:
-        payload: schemas.TokenPayload = cast(
-            schemas.TokenPayload,
+        payload: schemas.TokenPayload = schemas.TokenPayload.model_validate(
             jwt.decode(
                 token,
                 key=constants.JWT_SECRET_KEY,
                 algorithms=[constants.JWT_ALGORITHM],
-            ),
-        )
-        username: str = payload.sub
-        if username is None:
-            raise errors.InvalidTokenError(
-                "JWT token provided is missing username (sub)!"
             )
+        )
+        username = payload.sub
         token_scopes = payload.scopes
     except (JWTError, ValidationError):
         raise errors.InvalidTokenError("JWT token provided was invalid!")

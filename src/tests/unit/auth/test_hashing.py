@@ -1,7 +1,7 @@
 from typing import Self
 
-from triangler_fastapi.auth import constants
-from triangler_fastapi.auth import hashing
+from triangler_fastapi.domain.auth import constants
+from triangler_fastapi.domain.auth import hashing
 
 
 class TestGenerateSalt:

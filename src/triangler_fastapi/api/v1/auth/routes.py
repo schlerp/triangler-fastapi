@@ -1,18 +1,23 @@
+from enum import Enum
 from typing import Annotated
 
 from fastapi import APIRouter
 from fastapi import Depends
 from fastapi import HTTPException
 
-from triangler_fastapi.auth import constants
-from triangler_fastapi.auth import depends
-from triangler_fastapi.auth import schemas
-from triangler_fastapi.auth import usecases
+from triangler_fastapi.domain.auth import constants
+from triangler_fastapi.domain.auth import schemas
+from triangler_fastapi.domain.auth import usecases
 from triangler_fastapi.exceptions import errors
 
+from . import depends
+
+ROUTER_TAGS: list[str | Enum] = ["Auth", "v1"]
+ROUTER_PATH = "/auth"
+
 router = APIRouter(
-    prefix=constants.ROUTER_PREFIX,
-    tags=["Auth", "v1"],
+    prefix=ROUTER_PATH,
+    tags=ROUTER_TAGS,
     responses={404: {"description": "Not found"}},
 )
 

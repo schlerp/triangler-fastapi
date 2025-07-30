@@ -6,23 +6,25 @@ from typing import TypeAlias
 from jose import jwt
 from sqlalchemy import select
 
-from triangler_fastapi import persistence
-from triangler_fastapi.auth import constants
-from triangler_fastapi.auth import exceptions
-from triangler_fastapi.auth import models
-from triangler_fastapi.auth import rbac
-from triangler_fastapi.auth import schemas
+from triangler_fastapi.data import auth_models
+from triangler_fastapi.data import persistence
+from triangler_fastapi.domain.auth import constants
+from triangler_fastapi.domain.auth import rbac
+from triangler_fastapi.domain.auth import schemas
+from triangler_fastapi.exceptions import auth_errors
 
 
 def create_user_from_schema(user: schemas.UserCreate) -> schemas.User:
     """Create a user model in the database"""
     with persistence.SessionLocal() as session:
         if session.query(
-            select(models.User).filter(models.User.username == user.username).exists()
+            select(auth_models.User)
+            .filter(auth_models.User.username == user.username)
+            .exists()
         ).scalar():
-            raise exceptions.UserAlreadyExistsError(username=user.username)
+            raise auth_errors.UserAlreadyExistsError(username=user.username)
 
-        user_model = models.User(
+        user_model = auth_models.User(
             username=user.username,
             email=user.email,
             hashed_password=user.hashed_password,
@@ -39,7 +41,9 @@ def get_user(username: str) -> schemas.User | None:
     """Gets an experiment by its id."""
     with persistence.SessionLocal() as session:
         result = session.scalars(
-            select(models.User).where(models.User.username == username).order_by("id")
+            select(auth_models.User)
+            .where(auth_models.User.username == username)
+            .order_by("id")
         ).first()
         if not result:
             return None
@@ -51,11 +55,13 @@ def disable_user(username: str) -> schemas.User:
     """Marks a user as disabled by its username."""
     with persistence.SessionLocal() as session:
         result = session.scalars(
-            select(models.User).where(models.User.username == username).order_by("id")
+            select(auth_models.User)
+            .where(auth_models.User.username == username)
+            .order_by("id")
         ).first()
 
         if not result:
-            raise exceptions.UserNotExistsError(username=username)
+            raise auth_errors.UserNotExistsError(username=username)
 
         result.disabled = True
         session.add(result)
@@ -68,23 +74,23 @@ def authenticate_user(login_data: schemas.LoginPayload) -> schemas.User:
     with persistence.SessionLocal() as session:
         # get the user with that username
         user_model = session.scalars(
-            select(models.User)
-            .where(models.User.username == login_data.username)
-            .order_by(models.User.username)
+            select(auth_models.User)
+            .where(auth_models.User.username == login_data.username)
+            .order_by(auth_models.User.username)
         ).first()
 
         if not user_model:
-            raise exceptions.AuthenticationFailedError(constants.USER_NOT_FOUND_DETAIL)
+            raise auth_errors.AuthenticationFailedError(constants.USER_NOT_FOUND_DETAIL)
 
         # ensure the user is active
         if user_model.disabled:
-            raise exceptions.AuthenticationFailedError(constants.USER_DISABLED_DETAIL)
+            raise auth_errors.AuthenticationFailedError(constants.USER_DISABLED_DETAIL)
 
         user = schemas.User.model_validate(user_model)
 
     # validate that the passwords match
     if not user.validate_password(login_data.password):
-        raise exceptions.AuthenticationFailedError(
+        raise auth_errors.AuthenticationFailedError(
             constants.USER_VALIDATION_FAILED_DETAIL
         )
 

@@ -1,7 +1,7 @@
 from fastapi.security import OAuth2PasswordBearer
 
-from triangler_fastapi.auth import constants
-from triangler_fastapi.auth.schemas import Role
+from triangler_fastapi.domain.auth import constants
+from triangler_fastapi.domain.auth.schemas import Role
 
 SCOPES: dict[str, str] = {
     "me": "Read information about the current user.",

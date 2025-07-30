@@ -3,7 +3,7 @@ from datetime import timedelta
 
 from fastapi.testclient import TestClient
 
-from triangler_fastapi.schemas import ExperimentOutSchema
+from triangler_fastapi.domain.schemas import ExperimentOutSchema
 
 
 def create_experiment(

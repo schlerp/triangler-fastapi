@@ -5,8 +5,8 @@ from sqlalchemy.orm import Mapped
 from sqlalchemy.orm import mapped_column
 from sqlalchemy.orm import relationship
 
-from triangler_fastapi.auth.hashing import generate_salt
-from triangler_fastapi.models import TrianglerBaseModel
+from triangler_fastapi.data.models import TrianglerBaseModel
+from triangler_fastapi.domain.auth.hashing import generate_salt
 
 
 def default_datetime() -> datetime.datetime:
