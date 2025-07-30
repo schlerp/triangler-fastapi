@@ -1,5 +1,5 @@
+from triangler_fastapi.data import persistence
 from triangler_fastapi.entrypoints import get_application
-from triangler_fastapi.persistence import run_migrations
 
-run_migrations()
+persistence.run_migrations()
 app = get_application()

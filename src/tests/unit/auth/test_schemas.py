@@ -1,8 +1,8 @@
 import datetime
 from typing import Self
 
-from triangler_fastapi.auth import hashing
-from triangler_fastapi.auth import schemas
+from triangler_fastapi.domain.auth import hashing
+from triangler_fastapi.domain.auth import schemas
 
 
 class TestRoleSchema:
@@ -34,6 +34,7 @@ class TestUserSchema:
         return schemas.User(
             id=id,
             created_at=created_at,
+            updated_at=created_at,
             username=username,
             email=email,
             hashed_password=hashed_password,

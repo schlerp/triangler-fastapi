@@ -3,7 +3,7 @@ from typing import Self
 
 import pytest
 
-from triangler_fastapi import schemas
+from triangler_fastapi.domain import schemas
 
 
 class TestJustIdSchema:
